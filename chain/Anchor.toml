@@ -1,0 +1,21 @@
+[toolchain]
+package_manager = "npm"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.devnet]
+sayso_registry = "GiK9msFggXvftThohLKrsHjCTHVtLDiWLFij1whc2oML"
+
+[programs.localnet]
+sayso_registry = "GiK9msFggXvftThohLKrsHjCTHVtLDiWLFij1whc2oML"
+
+[provider]
+cluster = "devnet"
+wallet = "C:/Users/arche/.config/solana/sayso-deployer.json"
+
+[scripts]
+test = "cargo test"
+
+[hooks]
