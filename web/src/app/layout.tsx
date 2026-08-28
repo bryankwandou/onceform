@@ -14,16 +14,16 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-const SITE = "https://sayso.vercel.app";
+const SITE = "https://onceform.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: {
-    default: "SaySo — answer any form once, prove it without exposing it",
-    template: "%s · SaySo",
+    default: "Onceform — answer any form once, prove it without exposing it",
+    template: "%s · Onceform",
   },
   description:
-    "SaySo fills questionnaires from a vault that never leaves your device, proves the attributes behind your answers without revealing them, and writes a consent receipt you can withdraw at any time.",
+    "Onceform fills questionnaires from a vault that never leaves your device, proves the attributes behind your answers without revealing them, and writes a consent receipt you can withdraw at any time.",
   keywords: [
     "consent receipts",
     "form autofill",
@@ -32,18 +32,18 @@ export const metadata: Metadata = {
     "Solana",
     "privacy",
   ],
-  authors: [{ name: "SaySo" }],
+  authors: [{ name: "Onceform" }],
   openGraph: {
     type: "website",
     url: SITE,
-    title: "SaySo — answer any form once, prove it without exposing it",
+    title: "Onceform — answer any form once, prove it without exposing it",
     description:
       "A vault on your device, an attestation layer sites can verify, and a consent receipt you control. Running on Solana devnet.",
-    siteName: "SaySo",
+    siteName: "Onceform",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SaySo",
+    title: "Onceform",
     description:
       "Answer any form once. Prove what matters without handing over the rest.",
   },

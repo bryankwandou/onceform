@@ -1,12 +1,12 @@
 [package]
-name = "sayso_registry"
+name = "onceform_registry"
 version = "0.1.0"
-description = "Consent receipts, attestations and vault commitments for SaySo"
+description = "Consent receipts, attestations and vault commitments for Onceform"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "sayso_registry"
+name = "onceform_registry"
 
 [features]
 default = []

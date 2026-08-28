@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { SaySoLogo } from "@/components/brand/logo";
+import { OnceformLogo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
@@ -34,8 +34,8 @@ export function Nav() {
       )}
     >
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
-        <Link href="/" className="shrink-0" aria-label="SaySo home">
-          <SaySoLogo size={26} />
+        <Link href="/" className="shrink-0" aria-label="Onceform home">
+          <OnceformLogo size={26} />
         </Link>
 
         <div className="hidden items-center gap-7 md:flex">

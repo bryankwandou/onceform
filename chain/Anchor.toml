@@ -6,14 +6,14 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-sayso_registry = "GiK9msFggXvftThohLKrsHjCTHVtLDiWLFij1whc2oML"
+onceform_registry = "GiK9msFggXvftThohLKrsHjCTHVtLDiWLFij1whc2oML"
 
 [programs.localnet]
-sayso_registry = "GiK9msFggXvftThohLKrsHjCTHVtLDiWLFij1whc2oML"
+onceform_registry = "GiK9msFggXvftThohLKrsHjCTHVtLDiWLFij1whc2oML"
 
 [provider]
 cluster = "devnet"
-wallet = "C:/Users/arche/.config/solana/sayso-deployer.json"
+wallet = "C:/Users/arche/.config/solana/onceform-deployer.json"
 
 [scripts]
 test = "cargo test"

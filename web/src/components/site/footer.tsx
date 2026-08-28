@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SaySoMark } from "@/components/brand/logo";
+import { OnceformMark } from "@/components/brand/logo";
 import { PROGRAM_ID } from "@/lib/chain";
 import { explorer, shortAddress } from "@/lib/utils";
 
@@ -18,7 +18,7 @@ const COLUMNS = [
     links: [
       { href: "/developers", label: "Integration guide" },
       { href: "/#proof", label: "On-chain records" },
-      { href: "https://github.com/bryankwandou/sayso", label: "Source code" },
+      { href: "https://github.com/bryankwandou/onceform", label: "Source code" },
     ],
   },
   {
@@ -37,8 +37,8 @@ export function Footer() {
         <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)]">
           <div>
             <div className="flex items-center gap-2.5">
-              <SaySoMark size={26} idPrefix="footer" />
-              <span className="text-[15px] font-semibold tracking-[-0.02em]">SaySo</span>
+              <OnceformMark size={26} idPrefix="footer" />
+              <span className="text-[15px] font-semibold tracking-[-0.02em]">Onceform</span>
             </div>
             <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-chalk-500">
               Answer a form once. Prove what matters. Keep the rest to yourself,

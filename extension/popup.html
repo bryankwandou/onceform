@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Onceform</title>
+    <style>
+      :root {
+        --ink-950: #08080b;
+        --ink-900: #0e0e13;
+        --ink-800: #16161d;
+        --chalk-50: #f7f5f2;
+        --chalk-400: #a8a29a;
+        --chalk-500: #7d7871;
+        --brand: #f5b13d;
+        --verified: #4ade80;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        width: 340px;
+        margin: 0;
+        padding: 14px;
+        background: var(--ink-950);
+        color: var(--chalk-50);
+        font: 13px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+
+      header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+      header strong { font-size: 14px; letter-spacing: -0.02em; }
+
+      .origin {
+        margin-left: auto;
+        font-size: 11px;
+        color: var(--chalk-500);
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .note { color: var(--chalk-400); font-size: 12px; margin: 0 0 10px; }
+
+      ul { list-style: none; margin: 0 0 12px; padding: 0; max-height: 260px; overflow-y: auto; }
+
+      li {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 7px 9px;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 9px;
+        margin-bottom: 5px;
+        background: var(--ink-900);
+      }
+
+      li.missing { opacity: 0.45; }
+
+      input[type="checkbox"] { accent-color: var(--brand); width: 14px; height: 14px; margin: 0; }
+
+      .field { flex: 1; min-width: 0; }
+      .field b { display: block; font-weight: 550; font-size: 12.5px; }
+      .field span {
+        display: block;
+        font-size: 11px;
+        color: var(--chalk-500);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      button {
+        width: 100%;
+        height: 36px;
+        border: 0;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #ffd894, #f5b13d 45%, #e08b1e);
+        color: var(--ink-950);
+        font: 600 13px/1 ui-sans-serif, system-ui, sans-serif;
+        cursor: pointer;
+      }
+
+      button:disabled { opacity: 0.4; cursor: default; }
+
+      button.ghost {
+        background: none;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: var(--chalk-400);
+        margin-top: 6px;
+        font-weight: 500;
+      }
+
+      .result {
+        margin-top: 10px;
+        padding: 9px 10px;
+        border: 1px solid rgba(74, 222, 128, 0.25);
+        border-radius: 9px;
+        background: rgba(74, 222, 128, 0.06);
+        color: var(--verified);
+        font-size: 12px;
+      }
+
+      .empty { color: var(--chalk-500); font-size: 12px; padding: 18px 4px; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <svg width="20" height="20" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="pg" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FFD894" />
+            <stop offset="0.45" stop-color="#F5B13D" />
+            <stop offset="1" stop-color="#E08B1E" />
+          </linearGradient>
+        </defs>
+        <rect x="3" y="3" width="42" height="42" rx="13" fill="url(#pg)" />
+        <g stroke="#0B0B10" stroke-opacity="0.92" stroke-width="4" stroke-linecap="round">
+          <path d="M16.6 14.2h8.6" /><path d="M20.9 14.2v19.6" /><path d="M16.6 33.8h8.6" />
+        </g>
+        <circle cx="32.2" cy="24" r="3.1" fill="#0B0B10" fill-opacity="0.92" />
+      </svg>
+      <strong>Onceform</strong>
+      <span class="origin" id="origin"></span>
+    </header>
+
+    <p class="note" id="note">Reading the form…</p>
+    <ul id="fields"></ul>
+
+    <button id="fill" disabled>Release nothing</button>
+    <button class="ghost" id="vault">Edit vault</button>
+
+    <div class="result" id="result" hidden></div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

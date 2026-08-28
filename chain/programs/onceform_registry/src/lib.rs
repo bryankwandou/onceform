@@ -1,6 +1,6 @@
-//! SaySo Registry
+//! Onceform Registry
 //!
-//! The trust layer behind SaySo. Three things live here, and nothing else:
+//! The trust layer behind Onceform. Three things live here, and nothing else:
 //!
 //!   1. A *pointer* to a person's identity vault. The vault itself never leaves
 //!      the user's device. What lands on chain is a 32-byte commitment, so the
@@ -30,15 +30,15 @@ declare_id!("GiK9msFggXvftThohLKrsHjCTHVtLDiWLFij1whc2oML");
 const MAX_ATTESTATION_LIFETIME: i64 = 60 * 60 * 24 * 730;
 
 #[program]
-pub mod sayso_registry {
+pub mod onceform_registry {
     use super::*;
 
-    /// Register a wallet as a SaySo profile.
+    /// Register a wallet as a Onceform profile.
     ///
     /// `vault_commitment` is the client-side hash of the encrypted identity
     /// vault. The program treats it as an opaque 32 bytes.
     pub fn init_profile(ctx: Context<InitProfile>, vault_commitment: [u8; 32]) -> Result<()> {
-        require!(vault_commitment != [0u8; 32], SaySoError::EmptyCommitment);
+        require!(vault_commitment != [0u8; 32], OnceformError::EmptyCommitment);
 
         let now = Clock::get()?.unix_timestamp;
         let profile = &mut ctx.accounts.profile;
@@ -66,12 +66,12 @@ pub mod sayso_registry {
     /// edit is what keeps the commitment meaningful — a stale commitment would
     /// prove nothing about the answers being given today.
     pub fn rotate_vault(ctx: Context<RotateVault>, new_commitment: [u8; 32]) -> Result<()> {
-        require!(new_commitment != [0u8; 32], SaySoError::EmptyCommitment);
+        require!(new_commitment != [0u8; 32], OnceformError::EmptyCommitment);
 
         let profile = &mut ctx.accounts.profile;
         require!(
             new_commitment != profile.vault_commitment,
-            SaySoError::CommitmentUnchanged
+            OnceformError::CommitmentUnchanged
         );
 
         let previous = profile.vault_commitment;
@@ -90,7 +90,7 @@ pub mod sayso_registry {
 
     /// Write an attestation from the signing issuer against a subject wallet.
     ///
-    /// The issuer is whoever signs. SaySo does not gatekeep the issuer set —
+    /// The issuer is whoever signs. Onceform does not gatekeep the issuer set —
     /// verifiers decide which issuers they trust, the same way TLS clients
     /// decide which roots they trust. `claim_hash` binds the schema to its
     /// value off chain; the raw value stays with the issuer and the subject.
@@ -100,13 +100,13 @@ pub mod sayso_registry {
         claim_hash: [u8; 32],
         expires_at: i64,
     ) -> Result<()> {
-        require!(claim_hash != [0u8; 32], SaySoError::EmptyCommitment);
+        require!(claim_hash != [0u8; 32], OnceformError::EmptyCommitment);
 
         let now = Clock::get()?.unix_timestamp;
-        require!(expires_at > now, SaySoError::AlreadyExpired);
+        require!(expires_at > now, OnceformError::AlreadyExpired);
         require!(
             expires_at - now <= MAX_ATTESTATION_LIFETIME,
-            SaySoError::LifetimeTooLong
+            OnceformError::LifetimeTooLong
         );
 
         let attestation = &mut ctx.accounts.attestation;
@@ -137,7 +137,7 @@ pub mod sayso_registry {
     /// explicit revocation instead of a missing account.
     pub fn revoke_attestation(ctx: Context<RevokeAttestation>) -> Result<()> {
         let attestation = &mut ctx.accounts.attestation;
-        require!(attestation.revoked_at == 0, SaySoError::AlreadyRevoked);
+        require!(attestation.revoked_at == 0, OnceformError::AlreadyRevoked);
 
         attestation.revoked_at = Clock::get()?.unix_timestamp;
 
@@ -164,8 +164,8 @@ pub mod sayso_registry {
         fields_mask: u64,
         purpose_hash: [u8; 32],
     ) -> Result<()> {
-        require!(origin_hash != [0u8; 32], SaySoError::EmptyCommitment);
-        require!(fields_mask != 0, SaySoError::NothingDisclosed);
+        require!(origin_hash != [0u8; 32], OnceformError::EmptyCommitment);
+        require!(fields_mask != 0, OnceformError::NothingDisclosed);
 
         let now = Clock::get()?.unix_timestamp;
         let receipt = &mut ctx.accounts.receipt;
@@ -201,7 +201,7 @@ pub mod sayso_registry {
     /// never an erasure of it.
     pub fn revoke_consent(ctx: Context<RevokeConsent>) -> Result<()> {
         let receipt = &mut ctx.accounts.receipt;
-        require!(receipt.revoked_at == 0, SaySoError::AlreadyRevoked);
+        require!(receipt.revoked_at == 0, OnceformError::AlreadyRevoked);
 
         receipt.revoked_at = Clock::get()?.unix_timestamp;
 
@@ -288,7 +288,7 @@ pub struct RotateVault<'info> {
         mut,
         seeds = [b"profile", authority.key().as_ref()],
         bump = profile.bump,
-        has_one = authority @ SaySoError::WrongAuthority
+        has_one = authority @ OnceformError::WrongAuthority
     )]
     pub profile: Account<'info, Profile>,
 
@@ -333,7 +333,7 @@ pub struct RevokeAttestation<'info> {
             &attestation.schema.to_le_bytes()
         ],
         bump = attestation.bump,
-        has_one = issuer @ SaySoError::WrongIssuer
+        has_one = issuer @ OnceformError::WrongIssuer
     )]
     pub attestation: Account<'info, Attestation>,
 
@@ -356,7 +356,7 @@ pub struct RecordConsent<'info> {
         mut,
         seeds = [b"profile", authority.key().as_ref()],
         bump = profile.bump,
-        has_one = authority @ SaySoError::WrongAuthority
+        has_one = authority @ OnceformError::WrongAuthority
     )]
     pub profile: Account<'info, Profile>,
 
@@ -372,7 +372,7 @@ pub struct RevokeConsent<'info> {
         mut,
         seeds = [b"receipt", authority.key().as_ref(), &receipt.nonce.to_le_bytes()],
         bump = receipt.bump,
-        constraint = receipt.subject == authority.key() @ SaySoError::WrongAuthority
+        constraint = receipt.subject == authority.key() @ OnceformError::WrongAuthority
     )]
     pub receipt: Account<'info, ConsentReceipt>,
 
@@ -380,7 +380,7 @@ pub struct RevokeConsent<'info> {
         mut,
         seeds = [b"profile", authority.key().as_ref()],
         bump = profile.bump,
-        has_one = authority @ SaySoError::WrongAuthority
+        has_one = authority @ OnceformError::WrongAuthority
     )]
     pub profile: Account<'info, Profile>,
 
@@ -440,7 +440,7 @@ pub struct ConsentRevoked {
 /* -------------------------------- errors --------------------------------- */
 
 #[error_code]
-pub enum SaySoError {
+pub enum OnceformError {
     #[msg("Commitment or claim hash cannot be all zeroes")]
     EmptyCommitment,
     #[msg("New commitment matches the one already stored")]

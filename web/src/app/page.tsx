@@ -32,7 +32,7 @@ const STEPS = [
   {
     icon: FileCheck2,
     title: "Answer, and keep the receipt",
-    body: "SaySo shows exactly which fields a form is asking for before anything moves. Approve, trim the list, or refuse. Whatever you release leaves a receipt in your name that you can withdraw later.",
+    body: "Onceform shows exactly which fields a form is asking for before anything moves. Approve, trim the list, or refuse. Whatever you release leaves a receipt in your name that you can withdraw later.",
   },
 ];
 
@@ -66,11 +66,11 @@ const FAQ = [
   },
   {
     q: "What stops a site from asking for everything?",
-    a: "Nothing stops them asking. SaySo shows you the full request before a value moves and lets you untick anything you would rather keep. Sites that habitually over-ask become visible, because the request itself is part of the receipt.",
+    a: "Nothing stops them asking. Onceform shows you the full request before a value moves and lets you untick anything you would rather keep. Sites that habitually over-ask become visible, because the request itself is part of the receipt.",
   },
   {
     q: "Is this a tool for getting through surveys I should not be taking?",
-    a: "No, and the design works against that. SaySo answers with your real details from your own vault. The attestation layer exists specifically so panels can tell one genuine person from a hundred fake ones, which is the opposite of what a farming tool does.",
+    a: "No, and the design works against that. Onceform answers with your real details from your own vault. The attestation layer exists specifically so panels can tell one genuine person from a hundred fake ones, which is the opposite of what a farming tool does.",
   },
   {
     q: "Which browsers can run the extension?",
@@ -119,7 +119,7 @@ export default function Home() {
 
               <Reveal delay={0.1}>
                 <p className="mt-5 max-w-lg text-[15.5px] leading-relaxed text-chalk-400">
-                  Your details sit in a vault on your own device. SaySo releases
+                  Your details sit in a vault on your own device. Onceform releases
                   only the fields a site genuinely needs, proves the rest with an
                   attestation instead of a disclosure, and leaves you a receipt
                   you can tear up whenever you like.
@@ -214,7 +214,7 @@ export default function Home() {
                 <p className="text-[15px] leading-relaxed text-chalk-200">
                   Both sides want the same thing and cannot get it from each
                   other: a way to confirm something true about a person without
-                  moving the underlying facts around. That is the gap SaySo
+                  moving the underlying facts around. That is the gap Onceform
                   fills, and it is the reason there is a ledger involved rather
                   than a database.
                 </p>
@@ -275,7 +275,7 @@ export default function Home() {
                   The part a private database cannot do.
                 </h2>
                 <p className="mt-5 text-[14.5px] leading-relaxed text-chalk-400">
-                  Almost everything in SaySo could run on a normal server, and
+                  Almost everything in Onceform could run on a normal server, and
                   where that is true, it does. Four things could not, and each of
                   them is the reason a specific piece of state sits on Solana
                   instead.
@@ -323,7 +323,7 @@ export default function Home() {
                 <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-ink-950">
                   <div className="flex items-center justify-between border-b border-white/[0.07] px-5 py-3">
                     <p className="text-[12.5px] font-medium text-chalk-300">
-                      sayso_registry
+                      onceform_registry
                     </p>
                     <span className="rounded-full bg-verified/12 px-2.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide text-verified">
                       devnet

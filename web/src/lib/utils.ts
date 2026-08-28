@@ -11,7 +11,7 @@ export function shortAddress(address: string, lead = 4, tail = 4) {
   return `${address.slice(0, lead)}…${address.slice(-tail)}`;
 }
 
-/** Solana Explorer link, pinned to devnet since that is where SaySo runs today. */
+/** Solana Explorer link, pinned to devnet since that is where Onceform runs today. */
 export function explorer(kind: "tx" | "address", value: string) {
   return `https://explorer.solana.com/${kind}/${value}?cluster=devnet`;
 }
@@ -48,17 +48,19 @@ export type VaultFieldKey = (typeof VAULT_FIELDS)[number]["key"];
 
 /** Turn a set of field keys into the u64 bitmask the program stores. */
 export function fieldsToMask(keys: readonly string[]): bigint {
-  let mask = 0n;
+  let mask = BigInt(0);
   for (const key of keys) {
     const index = VAULT_FIELDS.findIndex((f) => f.key === key);
-    if (index >= 0) mask |= 1n << BigInt(index);
+    if (index >= 0) mask |= BigInt(1) << BigInt(index);
   }
   return mask;
 }
 
 /** Reverse of {@link fieldsToMask}, for rendering a receipt back to a human. */
 export function maskToFields(mask: bigint): string[] {
-  return VAULT_FIELDS.filter((_, i) => (mask >> BigInt(i)) & 1n).map((f) => f.label);
+  return VAULT_FIELDS.filter(
+    (_, i) => ((mask >> BigInt(i)) & BigInt(1)) === BigInt(1)
+  ).map((f) => f.label);
 }
 
 /** Attestation schema ids, mirrored from the on-chain program. */

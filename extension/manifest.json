@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Onceform",
+  "version": "0.1.0",
+  "description": "Answer a form once. Release only the fields you choose, and keep a record of what you gave away.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Onceform"
+  },
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "onceform@onceform.app",
+      "strict_min_version": "115.0"
+    }
+  }
+}

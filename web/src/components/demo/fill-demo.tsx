@@ -3,7 +3,7 @@
 /*
   The hero demo.
 
-  This is the whole product compressed into one card: a form arrives, SaySo
+  This is the whole product compressed into one card: a form arrives, Onceform
   proposes exactly which fields it wants to release, the person approves or
   trims that list, the fields fill, and a receipt drops out the bottom.
 
@@ -28,7 +28,7 @@ type Field = {
 
 const REQUESTED: Field[] = [
   { key: "fullName", label: "Full name", value: "Bryan Kwandou" },
-  { key: "email", label: "Work email", value: "bryan@sayso.id" },
+  { key: "email", label: "Work email", value: "bryan@onceform.id" },
   { key: "country", label: "Country", value: "Indonesia" },
   { key: "ageBand", label: "Age band", value: "25 – 34" },
   { key: "industry", label: "Industry", value: "Software" },
@@ -182,7 +182,7 @@ export function FillDemo() {
                 onClick={() => setPhase("consent")}
                 className="group inline-flex h-10 w-full items-center justify-center gap-2 rounded-[10px] amber-gradient text-[13px] font-semibold text-ink-950 transition-transform duration-200 hover:scale-[1.015] active:scale-[0.99]"
               >
-                Fill with SaySo
+                Fill with Onceform
                 <ChevronRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden />
               </button>
             ) : (
