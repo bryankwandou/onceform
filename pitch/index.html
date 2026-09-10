@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Onceform — Colosseum Eternal</title>
+<style>
+  :root {
+    --ink-950: #08080b;
+    --ink-900: #0e0e13;
+    --ink-800: #16161d;
+    --ink-700: #1e1e27;
+    --chalk-50: #f7f5f2;
+    --chalk-300: #cdc7bf;
+    --chalk-400: #a8a29a;
+    --chalk-500: #7d7871;
+    --brand: #f5b13d;
+    --brand-soft: #ffd894;
+    --brand-deep: #e08b1e;
+    --verified: #4ade80;
+    --revoked: #f87171;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+
+  body {
+    background: var(--ink-950);
+    color: var(--chalk-50);
+    font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  .deck { height: 100vh; position: relative; }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6vh 8vw;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  .slide.on { display: flex; animation: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide.on { animation: none; }
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--brand);
+    margin-bottom: 18px;
+  }
+
+  h1 {
+    font-size: clamp(38px, 6.4vw, 76px);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    font-weight: 600;
+  }
+
+  h2 {
+    font-size: clamp(28px, 4.2vw, 50px);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    font-weight: 600;
+    margin-bottom: 22px;
+  }
+
+  .lede {
+    font-size: clamp(16px, 1.9vw, 22px);
+    color: var(--chalk-400);
+    max-width: 60ch;
+    margin-top: 20px;
+    line-height: 1.5;
+  }
+
+  .grid { display: grid; gap: 16px; margin-top: 34px; }
+  .g2 { grid-template-columns: repeat(2, 1fr); }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+
+  .card {
+    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--ink-900);
+    border-radius: 16px;
+    padding: 20px 22px;
+  }
+
+  .card h3 {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+  }
+
+  .card p { font-size: 14px; color: var(--chalk-400); line-height: 1.5; }
+
+  .metric {
+    font-size: clamp(34px, 5vw, 58px);
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--brand-soft), var(--brand) 45%, var(--brand-deep));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .metric-note { font-size: 13px; color: var(--chalk-500); margin-top: 10px; }
+
+  .trend { display: flex; align-items: flex-end; gap: 14px; margin-top: 30px; height: 190px; }
+  .bar { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }
+  .bar span:first-child { font-size: 13px; color: var(--chalk-400); margin-bottom: 8px; }
+  .bar .fill {
+    background: linear-gradient(180deg, var(--brand), var(--brand-deep));
+    border-radius: 8px 8px 0 0;
+    animation: grow 0.8s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .bar.muted .fill { background: var(--ink-700); }
+  .bar span:last-child { font-size: 12px; color: var(--chalk-500); margin-top: 10px; }
+
+  @keyframes grow { from { height: 0 !important; } }
+
+  ul.tight { list-style: none; margin-top: 26px; }
+  ul.tight li {
+    padding: 11px 0 11px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 15.5px;
+    color: var(--chalk-300);
+    position: relative;
+  }
+  ul.tight li::before {
+    content: "";
+    position: absolute; left: 2px; top: 19px;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--brand);
+  }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 26px; font-size: 14.5px; }
+  th {
+    text-align: left; padding: 0 14px 10px 0;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--chalk-500); font-weight: 600;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+  }
+  td { padding: 12px 14px 12px 0; border-bottom: 1px solid rgba(255,255,255,0.06); color: var(--chalk-400); vertical-align: top; }
+  td:first-child { color: var(--chalk-50); font-weight: 500; }
+
+  .tag {
+    display: inline-block; padding: 3px 9px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
+  }
+  .tag.ok { background: rgba(74,222,128,0.12); color: var(--verified); }
+  .tag.no { background: rgba(248,113,113,0.12); color: var(--revoked); }
+  .tag.mid { background: rgba(245,177,61,0.12); color: var(--brand); }
+
+  code, .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; }
+
+  a { color: var(--brand); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .mark { display: flex; align-items: center; gap: 14px; margin-bottom: 30px; }
+  .mark span { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+
+  .foot {
+    position: fixed; bottom: 22px; left: 0; right: 0;
+    display: flex; justify-content: space-between;
+    padding: 0 8vw; font-size: 12px; color: var(--chalk-500);
+    pointer-events: none;
+  }
+
+  .notes {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--ink-800);
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding: 18px 8vw; font-size: 13.5px; line-height: 1.55;
+    color: var(--chalk-300); max-height: 34vh; overflow-y: auto;
+    display: none;
+  }
+  .notes.on { display: block; }
+  .notes b { color: var(--brand); }
+
+  .src { font-size: 11.5px; color: var(--chalk-500); margin-top: 20px; }
+  .src a { color: var(--chalk-400); }
+
+  @media (max-width: 720px) {
+    .g2, .g3 { grid-template-columns: 1fr; }
+    .slide { padding: 5vh 6vw; }
+  }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- 1 ------------------------------------------------------------------ -->
+  <section class="slide on" data-notes="Open with the bar test, not the architecture. <b>Say:</b> 'Forty-five percent of the answers research panels pay for are fake. And the people giving real answers have no idea where their data went.' Then stop. Let it land before you say the word Solana.">
+    <div class="mark">
+      <svg width="42" height="42" viewBox="0 0 48 48" fill="none">
+        <defs><linearGradient id="m" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#FFD894"/><stop offset="0.45" stop-color="#F5B13D"/><stop offset="1" stop-color="#E08B1E"/>
+        </linearGradient></defs>
+        <rect x="3" y="3" width="42" height="42" rx="13" fill="url(#m)"/>
+        <g stroke="#0B0B10" stroke-opacity="0.92" stroke-width="4" stroke-linecap="round">
+          <path d="M16.6 14.2h8.6"/><path d="M20.9 14.2v19.6"/><path d="M16.6 33.8h8.6"/>
+        </g>
+        <circle cx="32.2" cy="24" r="3.1" fill="#0B0B10" fill-opacity="0.92"/>
+      </svg>
+      <span>Onceform</span>
+    </div>
+    <h1>Answer a form once.<br/>Prove what matters.<br/>Take it back later.</h1>
+    <p class="lede">
+      A receipt layer for personal data. People disclose one field at a time and can
+      withdraw it. Research panels screen out fraud without collecting anything.
+    </p>
+    <p class="src">Colosseum Eternal · Solo founder · Live on Solana devnet</p>
+  </section>
+
+  <!-- 2 ------------------------------------------------------------------ -->
+  <section class="slide" data-notes="Two victims, one form. <b>Say:</b> 'This is not a privacy pitch and it is not a fraud pitch. It is one broken transaction with a loser on each end.' <b>Objection —</b> 'isn't fraud already solved?' Answer: every existing defence works by collecting MORE personal data, which makes the panel a bigger target and still does not prove the respondent is one distinct human.">
+    <p class="eyebrow">The problem</p>
+    <h2>One form. Two people losing.</h2>
+    <div class="grid g2">
+      <div class="card">
+        <h3>The person answering</h3>
+        <p>
+          Retypes the same twenty facts into every questionnaire they meet. Once
+          submitted, there is no way to see where a value went, who holds it now,
+          or to take it back. Consent is a checkbox nobody can audit.
+        </p>
+      </div>
+      <div class="card">
+        <h3>The panel paying</h3>
+        <p>
+          Pays real money for responses, and roughly half are fraudulent — phone
+          farms, AI-generated answers, one person wearing forty identities. Every
+          defence available today means collecting more personal data.
+        </p>
+      </div>
+    </div>
+    <p class="lede" style="margin-top:28px">
+      Panels defend themselves by hoarding exactly the data that makes them worth
+      attacking. The harder they try, the bigger the target.
+    </p>
+  </section>
+
+  <!-- 3 ------------------------------------------------------------------ -->
+  <section class="slide" data-notes="This is the strongest slide. Do not rush it. <b>Say:</b> 'This is not a stable problem someone will get around to. It has tripled in four years, and AI is why.' The 2025 number is Insights Association. If asked about variance across sources — some report ~20%, Kantar reported 38% in 2023 — say so plainly: the level is disputed, the direction is not.">
+    <p class="eyebrow">Why now</p>
+    <h2>Survey fraud has tripled in four years.</h2>
+    <div class="trend">
+      <div class="bar muted"><span>15–30%</span><div class="fill" style="height:38%"></div><span>2021 · Greenbook</span></div>
+      <div class="bar"><span>38%</span><div class="fill" style="height:63%"></div><span>2023 · Kantar</span></div>
+      <div class="bar"><span>45%</span><div class="fill" style="height:100%"></div><span>2025 · Insights Assoc.</span></div>
+    </div>
+    <div class="grid g2" style="margin-top:34px">
+      <div class="card">
+        <h3>Cheap synthetic respondents</h3>
+        <p>A language model now writes a plausible open-ended survey answer for a fraction of a cent. The economics that kept fraud bounded are gone.</p>
+      </div>
+      <div class="card">
+        <h3>The rails finally exist</h3>
+        <p>Solana Attestation Service shipped to mainnet in May 2025. Verifiable claims about a wallet are now ecosystem infrastructure rather than something each project reinvents.</p>
+      </div>
+    </div>
+    <p class="src">
+      Sources: <a href="https://www.driveresearch.com/market-research-company-blog/combat-survey-fraud/" target="_blank">Drive Research</a> ·
+      <a href="https://allthingsinsights.com/content/the-integrity-imperative-combating-market-research-fraud/" target="_blank">All Things Insights</a> ·
+      <a href="https://solana.com/news/solana-attestation-service" target="_blank">Solana Attestation Service</a>
+    </p>
+  </section>
+
+  <!-- 4 ------------------------------------------------------------------ -->
+  <section class="slide" data-notes="Walk the three steps in order, then land on the receipt. <b>Say:</b> 'The vault is convenience. The attestation is screening. The receipt is the part nobody else has.' Do not oversell steps one and two — they are the setup for the thing that is actually new.">
+    <p class="eyebrow">The product</p>
+    <h2>A vault, a claim, and a receipt.</h2>
+    <div class="grid g3">
+      <div class="card">
+        <h3>1 · The vault</h3>
+        <p>
+          Seventeen fields, stored on the person's own device. What reaches the
+          chain is one salted 32-byte commitment — enough to prove an answer came
+          from this vault, useless for recovering any value in it.
+        </p>
+      </div>
+      <div class="card">
+        <h3>2 · The claim</h3>
+        <p>
+          An issuer signs a statement about a wallet: distinct human, age bracket,
+          country, employment. The panel checks the claim. The panel never receives
+          the underlying fact.
+        </p>
+      </div>
+      <div class="card">
+        <h3>3 · The receipt</h3>
+        <p>
+          Every disclosure writes a record the person owns: which fields, to which
+          origin, when. They can withdraw it. The withdrawal is recorded too, so
+          the history stays honest in both directions.
+        </p>
+      </div>
+    </div>
+    <p class="lede" style="margin-top:26px">
+      Steps one and two make the product usable. Step three is the one nobody
+      has built.
+    </p>
+  </section>
+
+  <!-- 5 ------------------------------------------------------------------ -->
+  <section class="slide" data-notes="Open a signature in a browser tab. Do not describe it — show it. <b>Say:</b> 'Every instruction ran on devnet before this deck was written. These are real signatures, not a diagram of what would happen.' If the room is quiet, click through to the receipt account and show revoked_at set.">
+    <p class="eyebrow">Working today</p>
+    <h2>Six instructions, all proven on devnet.</h2>
+    <table>
+      <thead><tr><th>Instruction</th><th>What it does</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">init_profile</td><td>Registers a wallet with a vault commitment</td><td><span class="tag ok">confirmed</span></td></tr>
+        <tr><td class="mono">rotate_vault</td><td>Replaces the commitment when the vault changes</td><td><span class="tag ok">confirmed</span></td></tr>
+        <tr><td class="mono">issue_attestation</td><td>An issuer signs a claim, with an expiry</td><td><span class="tag ok">confirmed</span></td></tr>
+        <tr><td class="mono">revoke_attestation</td><td>The issuer withdraws the claim early</td><td><span class="tag ok">confirmed</span></td></tr>
+        <tr><td class="mono">record_consent</td><td>Logs which fields went where, and why</td><td><span class="tag ok">confirmed</span></td></tr>
+        <tr><td class="mono">revoke_consent</td><td>Withdraws it; the withdrawal stays on record</td><td><span class="tag ok">confirmed</span></td></tr>
+      </tbody>
+    </table>
+    <div class="grid g3" style="margin-top:28px">
+      <div class="card">
+        <h3>Live app</h3>
+        <p><a href="https://onceform.vercel.app" target="_blank">onceform.vercel.app</a><br/>Vault, receipts, verification, integration guide.</p>
+      </div>
+      <div class="card">
+        <h3>Program</h3>
+        <p class="mono" style="word-break:break-all"><a href="https://explorer.solana.com/address/GiK9msFggXvftThohLKrsHjCTHVtLDiWLFij1whc2oML?cluster=devnet" target="_blank">GiK9ms…c2oML</a></p>
+      </div>
+      <div class="card">
+        <h3>Source</h3>
+        <p><a href="https://github.com/bryankwandou/onceform" target="_blank">github.com/bryankwandou/onceform</a><br/>Program, app, extension, tests.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 ------------------------------------------------------------------ -->
+  <section class="slide" data-notes="This is the slide that decides the pitch. Answer the necessity test before it is asked. <b>Say:</b> 'If you take the chain out, the receipt becomes a row in my database — and a receipt I control is not evidence, it is a claim.' The point is adversarial: the party issuing the receipt is the party with a motive to lose it.">
+    <p class="eyebrow">The necessity test</p>
+    <h2>Take the chain out and the receipt stops being evidence.</h2>
+    <ul class="tight">
+      <li><strong>A receipt I could edit is worthless.</strong> If Onceform holds the consent record, then the company with the strongest motive to lose it is the one storing it.</li>
+      <li><strong>The person must outlive the company.</strong> Receipts stay readable if this project is abandoned tomorrow. That is the whole promise, and a server cannot make it.</li>
+      <li><strong>Panels verify without asking permission.</strong> No account, no API key, no rate limit. Screening is two public reads that keep working whether or not we like the panel doing them.</li>
+      <li><strong>Issuers are not gatekept.</strong> Anyone can attest, exactly as anyone can write a reference letter. Who to trust stays the verifier's judgement rather than being hidden inside our contract.</li>
+    </ul>
+  </section>
+
+  <!-- 7 ------------------------------------------------------------------ -->
+  <section class="slide" data-notes="Never say 'no competition'. <b>Say:</b> 'Most of this exists. The receipt does not.' <b>Hardest question —</b> 'why not just use SAS?' Answer directly: we should, and the roadmap moves attestation onto it. SAS proves a claim about a wallet. It says nothing about which fields a person handed to which site, or how to take that back. That gap is the company.">
+    <p class="eyebrow">Competition</p>
+    <h2>Most of this exists. The receipt does not.</h2>
+    <table>
+      <thead><tr><th>Who</th><th>What they solve</th><th>Consent receipt</th></tr></thead>
+      <tbody>
+        <tr><td>Solana Attestation Service</td><td>Verifiable claims about a wallet, permissionless, live since May 2025</td><td><span class="tag no">no</span></td></tr>
+        <tr><td>Civic, Range</td><td>Identity and KYC attestation issuance</td><td><span class="tag no">no</span></td></tr>
+        <tr><td>Attestly</td><td>Tamper-evident proof a person was present at a place and time</td><td><span class="tag no">no</span></td></tr>
+        <tr><td>1Password, Dashlane</td><td>Autofill convenience, nothing verifiable</td><td><span class="tag no">no</span></td></tr>
+        <tr><td>Panel fraud vendors</td><td>Fingerprinting and IP checks — by collecting more data</td><td><span class="tag no">no</span></td></tr>
+        <tr><td><strong>Onceform</strong></td><td>Field-level disclosure a person owns and can withdraw</td><td><span class="tag ok">the product</span></td></tr>
+      </tbody>
+    </table>
+    <p class="lede" style="margin-top:24px">
+      We do not compete with the attestation layer. We are the layer above it that
+      records what a person actually gave away — and lets them take it back.
+    </p>
+  </section>
+
+  <!-- 8 ------------------------------------------------------------------ -->
+  <section class="slide" data-notes="Do not dress this up. <b>Say:</b> 'No users. Four weeks, one person, and a product that works end to end.' Judges forgive no traction at this stage. They do not forgive a founder who inflates it. If pushed on the market number, be precise: $56B is the market research sector specifically, not the $150B whole-insights figure people quote loosely.">
+    <p class="eyebrow">Where this actually stands</p>
+    <h2>No users yet. Here is what does exist.</h2>
+    <div class="grid g3">
+      <div class="card">
+        <div class="metric">$56B</div>
+        <p class="metric-note">Market research sector, 2025. Part of a ~$150B insights industry. ESOMAR.</p>
+      </div>
+      <div class="card">
+        <div class="metric">45%</div>
+        <p class="metric-note">Of market research responses assessed as fraudulent. Insights Association, 2025.</p>
+      </div>
+      <div class="card">
+        <div class="metric">6 / 6</div>
+        <p class="metric-note">Program instructions executed on devnet with confirmed signatures.</p>
+      </div>
+    </div>
+    <ul class="tight">
+      <li><strong>Built:</strong> Anchor program, nine-route web app, Manifest V3 extension, 13 passing tests on the field matcher.</li>
+      <li><strong>Not built:</strong> no pilot panel, no users, no revenue. The extension has been tested but never shipped to a store.</li>
+      <li><strong>Team:</strong> one person. That is a real risk and the ask below is partly about fixing it.</li>
+    </ul>
+    <p class="src">
+      Sources: <a href="https://researchworld.com/articles/inside-the-153bn-insights-industry" target="_blank">Research World / ESOMAR</a> ·
+      <a href="https://backlinko.com/market-research-statistics" target="_blank">industry statistics roundup</a>
+    </p>
+  </section>
+
+  <!-- 9 ------------------------------------------------------------------ -->
+  <section class="slide" data-notes="Be specific and then stop talking. <b>Say:</b> 'Two hundred fifty thousand, and the first milestone is one panel running real screening against this in ninety days.' Do not pad. The last words in the room should be the milestone, not a thank-you.">
+    <p class="eyebrow">The ask</p>
+    <h2>$250K pre-seed, and one panel in ninety days.</h2>
+    <div class="grid g2">
+      <div class="card">
+        <h3>What the money does</h3>
+        <p>
+          Move attestation onto Solana Attestation Service rather than our own
+          registry. Ship the extension through Chrome and Mozilla review. Hire one
+          engineer so this stops being a single point of failure.
+        </p>
+      </div>
+      <div class="card">
+        <h3>What proves it worked</h3>
+        <p>
+          One research panel screening live respondents against Onceform
+          attestations within ninety days, and a thousand consent receipts written
+          by people who were not asked to as a favour.
+        </p>
+      </div>
+    </div>
+    <p class="lede" style="margin-top:28px">
+      The bet is simple: consent becomes auditable, or it stays a checkbox nobody
+      can check. Everything else here already runs.
+    </p>
+    <p class="src">
+      <a href="https://onceform.vercel.app" target="_blank">onceform.vercel.app</a> ·
+      <a href="https://github.com/bryankwandou/onceform" target="_blank">github.com/bryankwandou/onceform</a>
+    </p>
+  </section>
+
+</div>
+
+<div class="foot">
+  <span>Onceform</span>
+  <span><span id="n">1</span> / 9 &nbsp;·&nbsp; ← → to move &nbsp;·&nbsp; N for notes</span>
+</div>
+
+<div class="notes" id="notes"></div>
+
+<script>
+  const slides = [...document.querySelectorAll('.slide')];
+  const notes = document.getElementById('notes');
+  const counter = document.getElementById('n');
+  let i = 0;
+
+  function show(next) {
+    i = Math.max(0, Math.min(slides.length - 1, next));
+    slides.forEach((s, k) => s.classList.toggle('on', k === i));
+    counter.textContent = i + 1;
+    notes.innerHTML = slides[i].dataset.notes || '<em>No notes for this slide.</em>';
+    location.hash = i + 1;
+  }
+
+  addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); show(i + 1); }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); show(i - 1); }
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End') show(slides.length - 1);
+    if (e.key.toLowerCase() === 'n') notes.classList.toggle('on');
+  });
+
+  addEventListener('click', (e) => {
+    if (e.target.closest('a')) return;
+    show(i + (e.clientX > innerWidth / 2 ? 1 : -1));
+  });
+
+  show(parseInt(location.hash.slice(1)) - 1 || 0);
+</script>
+
+</body>
+</html>

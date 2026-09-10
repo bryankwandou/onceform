@@ -173,6 +173,46 @@ if (!(await connection.getAccountInfo(attestation))) {
   console.log("  --   issue_attestation (already issued for schema 0)");
 }
 
+/*
+  Revocation needs an attestation that has not been revoked yet, and schema 0 is
+  the long-lived one every earlier run has been reusing. So issue a throwaway on
+  a schema nobody has touched, then withdraw it — that way the pair can run again
+  tomorrow without tripping AlreadyRevoked.
+*/
+const throwawaySchema = 1 + (nonce % 65000);
+const throwaway = attestationPda(me, me, throwawaySchema);
+
+await send(
+  `issue_attestation (schema ${throwawaySchema}, to be revoked)`,
+  new TransactionInstruction({
+    programId: PROGRAM_ID,
+    keys: [
+      { pubkey: throwaway, isSigner: false, isWritable: true },
+      { pubkey: me, isSigner: true, isWritable: true },
+      { pubkey: me, isSigner: false, isWritable: false },
+      SYS,
+    ],
+    data: cat(
+      disc("issue_attestation"),
+      u16(throwawaySchema),
+      hash(`throwaway-${nonce}`),
+      i64(Math.floor(Date.now() / 1000) + 60 * 60)
+    ),
+  })
+);
+
+await send(
+  "revoke_attestation",
+  new TransactionInstruction({
+    programId: PROGRAM_ID,
+    keys: [
+      { pubkey: throwaway, isSigner: false, isWritable: true },
+      { pubkey: me, isSigner: true, isWritable: false },
+    ],
+    data: cat(disc("revoke_attestation")),
+  })
+);
+
 const receipt = receiptPda(me, nonce);
 
 await send(
