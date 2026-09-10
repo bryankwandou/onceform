@@ -158,3 +158,55 @@ chrome.runtime.onMessage.addListener((msg, _sender, respond) => {
   }
   return true;
 });
+
+/*
+  Bridge the vault out of the web app.
+
+  A person edits their answers at onceform.vercel.app, where the values sit in
+  that origin's localStorage and never leave the device. The popup cannot read
+  another origin's localStorage, so without this the vault it fills from is
+  always empty. On the Onceform origin only, mirror that store into extension
+  storage.
+
+  One direction, deliberately. The app is where a person edits their answers; a
+  script that runs on other people's pages has no business writing them back.
+*/
+const VAULT_ORIGINS = ["https://onceform.vercel.app", "http://localhost:3000"];
+const VAULT_KEY = "onceform:vault";
+
+let lastMirrored = null;
+
+function mirrorVault() {
+  let raw;
+  try {
+    raw = localStorage.getItem(VAULT_KEY) || "{}";
+  } catch {
+    return; /* Storage blocked — a private window, or site data turned off. */
+  }
+  if (raw === lastMirrored) return;
+
+  let vault;
+  try {
+    vault = JSON.parse(raw);
+  } catch {
+    return; /* Half-written or from a version we do not understand. */
+  }
+  if (!vault || typeof vault !== "object" || Array.isArray(vault)) return;
+
+  lastMirrored = raw;
+  chrome.storage.local.set({ vault });
+}
+
+let vaultMirrorTimer = null;
+
+if (VAULT_ORIGINS.includes(location.origin)) {
+  mirrorVault();
+  /* Fires for edits made in another tab. */
+  window.addEventListener("storage", (event) => {
+    if (event.key === VAULT_KEY) mirrorVault();
+  });
+  /* Does not fire for edits in this tab, and the app saves on every keystroke,
+     so also check on a slow timer. The comparison above keeps it to one write
+     per actual change. */
+  vaultMirrorTimer = window.setInterval(mirrorVault, 2000);
+}

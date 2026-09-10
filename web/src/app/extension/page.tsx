@@ -28,7 +28,7 @@ const STEPS = [
   {
     n: "04",
     title: "Fill your vault",
-    body: "Open the vault on this site and enter as much as you want to keep on hand. The extension reads it from the same browser; nothing is uploaded.",
+    body: "Open the vault on this site and enter as much as you want to keep on hand. The extension copies it across while that page is open, and only from this site — nothing is uploaded, and no other site can hand it a vault.",
   },
 ];
 

@@ -23,9 +23,9 @@ const SOURCE = readFileSync(new URL("../content.js", import.meta.url), "utf8");
  * internals. The script registers a chrome listener on load, so a stub has to
  * exist before it runs.
  */
-function load(html) {
+function load(html, options = {}) {
   const dom = new JSDOM(`<!doctype html><html><body>${html}</body></html>`, {
-    url: "https://panel.example.test/survey",
+    url: options.url || "https://panel.example.test/survey",
   });
 
   const win = dom.window;
@@ -34,6 +34,7 @@ function load(html) {
     window: globalThis.window,
     document: globalThis.document,
     location: globalThis.location,
+    localStorage: globalThis.localStorage,
     CSS: globalThis.CSS,
     chrome: globalThis.chrome,
     Event: globalThis.Event,
@@ -44,6 +45,8 @@ function load(html) {
 
   globalThis.window = win;
   globalThis.document = win.document;
+  globalThis.location = win.location;
+  globalThis.localStorage = win.localStorage;
   /* jsdom ships no CSS.escape; every browser the extension targets has it. */
   globalThis.CSS = win.CSS ?? {
     escape: (value) => String(value).replace(/[^a-zA-Z0-9_-]/g, (c) => `\${c}`),
@@ -52,7 +55,13 @@ function load(html) {
   globalThis.HTMLInputElement = win.HTMLInputElement;
   globalThis.HTMLSelectElement = win.HTMLSelectElement;
   globalThis.HTMLTextAreaElement = win.HTMLTextAreaElement;
-  globalThis.chrome = { runtime: { onMessage: { addListener() {} } } };
+  /* Everything the content script writes to extension storage, in order, so a
+     test can assert on it without a browser. */
+  const written = [];
+  globalThis.chrome = {
+    runtime: { onMessage: { addListener() {} } },
+    storage: { local: { set: (items) => written.push(items) } },
+  };
 
   /*
     jsdom does not lay anything out, so every element reports offsetParent as
@@ -68,8 +77,13 @@ function load(html) {
     },
   });
 
+  /* Whatever the app would have saved before the extension ran. */
+  for (const [key, value] of Object.entries(options.storage || {})) {
+    win.localStorage.setItem(key, value);
+  }
+
   const exposed = `${SOURCE}
-    ;globalThis.__onceform = { scan, fill, classify, describe };`;
+    ;globalThis.__onceform = { scan, fill, classify, describe, mirrorVault, vaultMirrorTimer };`;
 
   // eslint-disable-next-line no-eval
   (0, eval)(exposed);
@@ -77,12 +91,19 @@ function load(html) {
 
   return {
     ...api,
+    written,
     document: win.document,
+    window: win,
     restore() {
+      /* The mirror runs on a timer; leaving it armed would hold the test
+         runner open. */
+      if (api.vaultMirrorTimer !== null) win.clearInterval(api.vaultMirrorTimer);
       Object.assign(globalThis, previous);
     },
   };
 }
+
+const APP = "https://onceform.vercel.app/vault";
 
 /* ------------------------------ recognition ------------------------------ */
 
@@ -224,5 +245,50 @@ test("an empty vault value is not written over an existing answer", () => {
   const result = ctx.fill({ fullName: "" });
   assert.equal(result.filled, 0);
   assert.equal(ctx.document.querySelector("#n").value, "typed by hand");
+  ctx.restore();
+});
+
+/* ----------------------------- the vault bridge ---------------------------- */
+
+test("mirrors the vault out of the app's localStorage", () => {
+  const ctx = load("", {
+    url: APP,
+    storage: { "onceform:vault": JSON.stringify({ fullName: "Bryan", email: "b@example.test" }) },
+  });
+
+  assert.deepEqual(ctx.written, [
+    { vault: { fullName: "Bryan", email: "b@example.test" } },
+  ]);
+  ctx.restore();
+});
+
+test("does not touch extension storage on anyone else's site", () => {
+  const ctx = load("", { storage: { "onceform:vault": JSON.stringify({ email: "b@example.test" }) } });
+  assert.deepEqual(ctx.written, [], "a survey page must never write the vault");
+  assert.equal(ctx.vaultMirrorTimer, null, "and must not arm the mirror");
+  ctx.restore();
+});
+
+test("writes once per actual change, not once per check", () => {
+  const ctx = load("", { url: APP, storage: { "onceform:vault": "{}" } });
+  ctx.mirrorVault();
+  ctx.mirrorVault();
+  assert.equal(ctx.written.length, 1);
+
+  ctx.window.localStorage.setItem("onceform:vault", JSON.stringify({ city: "Jakarta" }));
+  ctx.mirrorVault();
+  assert.deepEqual(ctx.written[1], { vault: { city: "Jakarta" } });
+  ctx.restore();
+});
+
+test("survives a vault that is not an object", () => {
+  const ctx = load("", { url: APP, storage: { "onceform:vault": '"not a vault"' } });
+  assert.deepEqual(ctx.written, []);
+  ctx.restore();
+});
+
+test("survives a half-written vault", () => {
+  const ctx = load("", { url: APP, storage: { "onceform:vault": "{\"email\":" } });
+  assert.deepEqual(ctx.written, []);
   ctx.restore();
 });
