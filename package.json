@@ -5,9 +5,12 @@
   "description": "Consent receipts and attestations for research panels, on Solana.",
   "scripts": {
     "test": "node --test extension/test/fill.test.mjs",
+    "test:browser": "node --test extension/test/browser.test.mjs",
+    "test:all": "npm test && npm run test:browser",
     "smoke": "node chain/smoke.mjs"
   },
   "devDependencies": {
-    "jsdom": "^27.0.0"
+    "jsdom": "^27.0.0",
+    "playwright": "^1.63.0"
   }
 }

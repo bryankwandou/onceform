@@ -65,6 +65,12 @@ cd chain && anchor build && anchor deploy --provider.cluster devnet
 The extension loads unpacked from `extension/` via `chrome://extensions`
 with developer mode on.
 
+```
+npm test            # field matching and the bridges, under jsdom
+npm run test:browser # the extension loaded unpacked into a real Chromium
+npm run smoke        # every instruction, against devnet
+```
+
 The vault is edited in the web app, where it lives in that origin's
 localStorage. The content script mirrors it into extension storage, but only
 while a page on the Onceform origin is open, and only in that direction — no
