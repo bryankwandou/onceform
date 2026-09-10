@@ -71,6 +71,12 @@ while a page on the Onceform origin is open, and only in that direction — no
 other site can hand the extension a vault, and a script running on someone
 else's questionnaire cannot write your answers back.
 
+The log runs the other way. After a fill the extension records which fields went
+to which site, hands that log — and only that log, never the answers — back to
+the app, and the receipts page lists it as unrecorded until you sign it onto the
+chain. Writing a receipt needs a wallet, and a service worker has no business
+holding a key.
+
 ## Browser support, honestly
 
 Desktop Chrome, Edge, Brave and Firefox load the extension as written.

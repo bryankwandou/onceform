@@ -10,12 +10,44 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ExternalLink, Loader2, RotateCcw, Wallet } from "lucide-react";
+import { ExternalLink, Loader2, RotateCcw, Upload, Wallet } from "lucide-react";
 import { Nav } from "@/components/site/nav";
 import { Footer } from "@/components/site/footer";
 import { useWallet } from "@/lib/wallet";
-import { fetchReceipts, ixRevokeConsent, receiptPda, type DecodedReceipt } from "@/lib/chain";
-import { explorer, maskToFields, shortAddress } from "@/lib/utils";
+import {
+  fetchReceipts,
+  hashString,
+  ixRecordConsent,
+  ixRevokeConsent,
+  receiptPda,
+  type DecodedReceipt,
+} from "@/lib/chain";
+import { VAULT_FIELDS, explorer, fieldsToMask, maskToFields, shortAddress } from "@/lib/utils";
+
+/*
+  What the extension released, waiting to be signed.
+
+  The extension cannot write a receipt — that needs a wallet, and a service
+  worker has no business holding a key. So it leaves the log here and the person
+  decides, one entry at a time, which disclosures are worth putting on chain.
+*/
+const DISCLOSURE_KEY = "onceform:disclosures";
+const RECORDED_KEY = "onceform:recorded";
+
+type Disclosure = { origin: string; fields: string[]; at: number };
+
+function readJson<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function labelFor(key: string) {
+  return VAULT_FIELDS.find((f) => f.key === key)?.label ?? key;
+}
 
 function when(seconds: number) {
   return new Date(seconds * 1000).toLocaleString(undefined, {
@@ -30,6 +62,24 @@ export default function ReceiptsPage() {
   const [loading, setLoading] = useState(false);
   const [working, setWorking] = useState<string>("");
   const [error, setError] = useState("");
+  const [pending, setPending] = useState<Disclosure[]>([]);
+
+  /* The content script publishes the log after this page has already rendered,
+     and again whenever a fill happens in another tab, so re-read rather than
+     look once. */
+  useEffect(() => {
+    const refresh = () => {
+      const recorded = new Set(readJson<number[]>(RECORDED_KEY, []));
+      setPending(
+        readJson<Disclosure[]>(DISCLOSURE_KEY, [])
+          .filter((d) => d && !recorded.has(d.at))
+          .sort((a, b) => b.at - a.at)
+      );
+    };
+    refresh();
+    const timer = window.setInterval(refresh, 1500);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const load = useCallback(async () => {
     if (!wallet.publicKey) {
@@ -50,6 +100,38 @@ export default function ReceiptsPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  async function record(disclosure: Disclosure) {
+    if (!wallet.publicKey) return;
+    const id = String(disclosure.at);
+    setWorking(id);
+    setError("");
+    try {
+      await wallet.send([
+        await ixRecordConsent(wallet.publicKey, {
+          nonce: BigInt(disclosure.at),
+          originHash: await hashString(disclosure.origin),
+          fieldsMask: fieldsToMask(disclosure.fields),
+          purposeHash: await hashString("form fill"),
+        }),
+      ]);
+
+      /* Remember it locally so the entry stops being offered. The receipt
+         itself is the chain's job; this is only about not asking twice. */
+      const recorded = readJson<number[]>(RECORDED_KEY, []);
+      localStorage.setItem(RECORDED_KEY, JSON.stringify([...recorded, disclosure.at]));
+      setPending((current) => current.filter((d) => d.at !== disclosure.at));
+      await load();
+    } catch (e) {
+      setError(
+        e instanceof Error
+          ? `${e.message} If this is your first receipt, publish your vault first.`
+          : "The receipt did not go through."
+      );
+    } finally {
+      setWorking("");
+    }
+  }
 
   async function revoke(receipt: DecodedReceipt) {
     if (!wallet.publicKey) return;
@@ -81,6 +163,73 @@ export default function ReceiptsPage() {
             stays honest in both directions.
           </p>
         </header>
+
+        {wallet.publicKey && pending.length > 0 && (
+          <section className="mt-10">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="text-[17px] font-semibold tracking-[-0.02em]">
+                Released, not yet on chain
+              </h2>
+              <p className="text-[12.5px] text-chalk-500">
+                From the extension. Each one costs a small devnet fee to record.
+              </p>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              {pending.map((d) => {
+                const id = String(d.at);
+                return (
+                  <article
+                    key={id}
+                    className="rounded-2xl border border-amber-brand/25 bg-ink-900 p-5"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[13px] text-chalk-500">{when(d.at / 1000)}</p>
+                        <p className="mt-1 text-[15px] font-medium tracking-[-0.01em]">
+                          {d.fields.length} field{d.fields.length === 1 ? "" : "s"} to{" "}
+                          <span className="font-mono text-[13.5px]">{d.origin}</span>
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-amber-brand/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-amber-brand">
+                        Unrecorded
+                      </span>
+                    </div>
+
+                    <div className="mt-3.5 flex flex-wrap gap-1.5">
+                      {d.fields.map((f) => (
+                        <span
+                          key={f}
+                          className="rounded-md border border-white/[0.08] px-2 py-1 text-[11.5px] text-chalk-400"
+                        >
+                          {labelFor(f)}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-white/[0.06] pt-3.5">
+                      <p className="text-[12.5px] text-chalk-500">
+                        Nothing about this is on chain until you sign it.
+                      </p>
+                      <button
+                        onClick={() => record(d)}
+                        disabled={working === id}
+                        className="ml-auto inline-flex items-center gap-1.5 rounded-lg amber-gradient px-3 py-1.5 text-[12.5px] font-semibold text-ink-950 disabled:opacity-50"
+                      >
+                        {working === id ? (
+                          <Loader2 className="size-3.5 animate-spin" />
+                        ) : (
+                          <Upload className="size-3.5" />
+                        )}
+                        Write the receipt
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {!wallet.publicKey ? (
           <div className="mt-10 rounded-2xl border border-white/[0.08] bg-ink-900 p-8 text-center">

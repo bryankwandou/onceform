@@ -30,6 +30,11 @@ const STEPS = [
     title: "Fill your vault",
     body: "Open the vault on this site and enter as much as you want to keep on hand. The extension copies it across while that page is open, and only from this site — nothing is uploaded, and no other site can hand it a vault.",
   },
+  {
+    n: "05",
+    title: "Sign the receipt",
+    body: "After a fill, the extension hands the log — which fields, which site, when — back to this site. Your receipts page lists it as unrecorded until you sign it onto the chain with your wallet. Your answers never make that trip.",
+  },
 ];
 
 export default function ExtensionPage() {

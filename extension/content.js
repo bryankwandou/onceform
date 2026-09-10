@@ -210,3 +210,38 @@ if (VAULT_ORIGINS.includes(location.origin)) {
      per actual change. */
   vaultMirrorTimer = window.setInterval(mirrorVault, 2000);
 }
+
+/*
+  And carry the disclosure log the other way.
+
+  When the popup fills a form it notes what it released, but a receipt has to be
+  signed by a wallet and a service worker has no business holding a key. So the
+  log is handed to the app, which is where the wallet lives and where a person
+  can turn any entry into a consent receipt on chain.
+
+  Only the log crosses — origin, field names and a timestamp. The answers
+  themselves never leave extension storage by this route.
+*/
+const DISCLOSURE_KEY = "onceform:disclosures";
+
+function publishDisclosures() {
+  chrome.storage.local.get("history", (stored) => {
+    const history = Array.isArray(stored?.history) ? stored.history : [];
+    const safe = history
+      .filter((entry) => entry && typeof entry.origin === "string" && Array.isArray(entry.fields))
+      .map((entry) => ({ origin: entry.origin, fields: entry.fields, at: Number(entry.at) || 0 }));
+    try {
+      localStorage.setItem(DISCLOSURE_KEY, JSON.stringify(safe));
+    } catch {
+      /* Storage blocked. The app falls back to showing nothing pending. */
+    }
+  });
+}
+
+if (VAULT_ORIGINS.includes(location.origin)) {
+  publishDisclosures();
+  /* A fill can happen while the app sits open in another tab. */
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === "local" && changes.history) publishDisclosures();
+  });
+}

@@ -162,7 +162,7 @@ els.fill.addEventListener("click", async () => {
   els.result.hidden = false;
   els.result.textContent =
     outcome.filled > 0
-      ? `Filled ${outcome.filled} field${outcome.filled === 1 ? "" : "s"} on ${origin}. Recorded in your history.`
+      ? `Filled ${outcome.filled} field${outcome.filled === 1 ? "" : "s"} on ${origin}. Open Onceform to write the receipt.`
       : `Nothing was filled. The fields may have changed since the scan.`;
 });
 

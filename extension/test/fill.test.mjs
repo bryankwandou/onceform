@@ -60,7 +60,15 @@ function load(html, options = {}) {
   const written = [];
   globalThis.chrome = {
     runtime: { onMessage: { addListener() {} } },
-    storage: { local: { set: (items) => written.push(items) } },
+    storage: {
+      local: {
+        set: (items) => written.push(items),
+        /* Real chrome.storage is async; the callback form is what the content
+           script uses, and it resolves before the next tick in practice. */
+        get: (_key, callback) => callback(options.extensionStorage || {}),
+      },
+      onChanged: { addListener() {} },
+    },
   };
 
   /*
@@ -290,5 +298,62 @@ test("survives a vault that is not an object", () => {
 test("survives a half-written vault", () => {
   const ctx = load("", { url: APP, storage: { "onceform:vault": "{\"email\":" } });
   assert.deepEqual(ctx.written, []);
+  ctx.restore();
+});
+
+/* --------------------------- the disclosure log --------------------------- */
+
+test("hands the disclosure log to the app", () => {
+  const ctx = load("", {
+    url: APP,
+    extensionStorage: {
+      history: [{ origin: "panel.example.test", fields: ["email", "ageBand"], at: 1700000000000 }],
+    },
+  });
+
+  const published = JSON.parse(ctx.window.localStorage.getItem("onceform:disclosures"));
+  assert.deepEqual(published, [
+    { origin: "panel.example.test", fields: ["email", "ageBand"], at: 1700000000000 },
+  ]);
+  ctx.restore();
+});
+
+test("carries the log but never the answers", () => {
+  const ctx = load("", {
+    url: APP,
+    extensionStorage: {
+      history: [
+        {
+          origin: "panel.example.test",
+          fields: ["email"],
+          at: 1700000000000,
+          values: { email: "b@example.test" },
+        },
+      ],
+    },
+  });
+
+  const raw = ctx.window.localStorage.getItem("onceform:disclosures");
+  assert.equal(raw.includes("b@example.test"), false, "an answer must not cross");
+  assert.deepEqual(Object.keys(JSON.parse(raw)[0]).sort(), ["at", "fields", "origin"]);
+  ctx.restore();
+});
+
+test("drops log entries that are the wrong shape", () => {
+  const ctx = load("", {
+    url: APP,
+    extensionStorage: { history: [null, { origin: 7 }, { origin: "ok.test", fields: ["email"] }] },
+  });
+
+  const published = JSON.parse(ctx.window.localStorage.getItem("onceform:disclosures"));
+  assert.deepEqual(published, [{ origin: "ok.test", fields: ["email"], at: 0 }]);
+  ctx.restore();
+});
+
+test("publishes nothing on a site that is not the app", () => {
+  const ctx = load("", {
+    extensionStorage: { history: [{ origin: "panel.example.test", fields: ["email"], at: 1 }] },
+  });
+  assert.equal(ctx.window.localStorage.getItem("onceform:disclosures"), null);
   ctx.restore();
 });
