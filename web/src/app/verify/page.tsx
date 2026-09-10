@@ -38,6 +38,10 @@ type Result = {
   address: string;
   registered: boolean;
   attestations: DecodedAttestation[];
+  /* Fixed at lookup rather than read during render: a clock read while
+     rendering makes the server and the browser disagree about what has
+     expired. */
+  checkedAt: number;
 };
 
 function when(seconds: number) {
@@ -75,6 +79,7 @@ export default function VerifyPage() {
         address: key.toBase58(),
         registered: Boolean(profile),
         attestations,
+        checkedAt: Math.floor(Date.now() / 1000),
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not reach the network.");
@@ -82,8 +87,6 @@ export default function VerifyPage() {
       setBusy(false);
     }
   }
-
-  const now = Math.floor(Date.now() / 1000);
 
   return (
     <>
@@ -173,7 +176,7 @@ export default function VerifyPage() {
             ) : (
               <div className="mt-4 space-y-2.5">
                 {result.attestations.map((a, i) => {
-                  const expired = a.expiresAt !== 0 && a.expiresAt < now;
+                  const expired = a.expiresAt !== 0 && a.expiresAt < result.checkedAt;
                   const revoked = a.revokedAt !== 0;
                   const live = !expired && !revoked;
 

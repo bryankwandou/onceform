@@ -19,6 +19,7 @@ import {
   hashString,
   ixRecordConsent,
   ixRevokeConsent,
+  profilePda,
   receiptPda,
   type DecodedReceipt,
 } from "@/lib/chain";
@@ -63,6 +64,7 @@ export default function ReceiptsPage() {
   const [working, setWorking] = useState<string>("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState<Disclosure[]>([]);
+  const [registered, setRegistered] = useState(true);
 
   /* The content script publishes the log after this page has already rendered,
      and again whenever a fill happens in another tab, so re-read rather than
@@ -89,6 +91,10 @@ export default function ReceiptsPage() {
     setLoading(true);
     setError("");
     try {
+      /* A receipt hangs off the profile account, so without one the first
+         signature fails for a reason the wallet will not explain. */
+      const [profile] = profilePda(wallet.publicKey);
+      setRegistered(Boolean(await wallet.connection.getAccountInfo(profile)));
       setReceipts(await fetchReceipts(wallet.connection, wallet.publicKey));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not read the chain.");
@@ -123,11 +129,7 @@ export default function ReceiptsPage() {
       setPending((current) => current.filter((d) => d.at !== disclosure.at));
       await load();
     } catch (e) {
-      setError(
-        e instanceof Error
-          ? `${e.message} If this is your first receipt, publish your vault first.`
-          : "The receipt did not go through."
-      );
+      setError(e instanceof Error ? e.message : "The receipt did not go through.");
     } finally {
       setWorking("");
     }
@@ -164,7 +166,7 @@ export default function ReceiptsPage() {
           </p>
         </header>
 
-        {wallet.publicKey && pending.length > 0 && (
+        {pending.length > 0 && (
           <section className="mt-10">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="text-[17px] font-semibold tracking-[-0.02em]">
@@ -209,20 +211,42 @@ export default function ReceiptsPage() {
 
                     <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-white/[0.06] pt-3.5">
                       <p className="text-[12.5px] text-chalk-500">
-                        Nothing about this is on chain until you sign it.
+                        {!wallet.publicKey
+                          ? "Connect a wallet to sign this onto the chain."
+                          : !registered
+                            ? "Publish your vault first — a receipt hangs off your profile."
+                            : "Nothing about this is on chain until you sign it."}
                       </p>
-                      <button
-                        onClick={() => record(d)}
-                        disabled={working === id}
-                        className="ml-auto inline-flex items-center gap-1.5 rounded-lg amber-gradient px-3 py-1.5 text-[12.5px] font-semibold text-ink-950 disabled:opacity-50"
-                      >
-                        {working === id ? (
-                          <Loader2 className="size-3.5 animate-spin" />
-                        ) : (
-                          <Upload className="size-3.5" />
-                        )}
-                        Write the receipt
-                      </button>
+                      {!wallet.publicKey ? (
+                        <button
+                          onClick={wallet.connect}
+                          disabled={wallet.connecting}
+                          className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-[12.5px] text-chalk-400 transition-colors hover:border-amber-brand/40 hover:text-amber-brand disabled:opacity-50"
+                        >
+                          <Wallet className="size-3.5" />
+                          {wallet.available ? "Connect wallet" : "Get a wallet"}
+                        </button>
+                      ) : !registered ? (
+                        <a
+                          href="/vault"
+                          className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-[12.5px] text-chalk-400 transition-colors hover:border-amber-brand/40 hover:text-amber-brand"
+                        >
+                          Open your vault
+                        </a>
+                      ) : (
+                        <button
+                          onClick={() => record(d)}
+                          disabled={working === id}
+                          className="ml-auto inline-flex items-center gap-1.5 rounded-lg amber-gradient px-3 py-1.5 text-[12.5px] font-semibold text-ink-950 disabled:opacity-50"
+                        >
+                          {working === id ? (
+                            <Loader2 className="size-3.5 animate-spin" />
+                          ) : (
+                            <Upload className="size-3.5" />
+                          )}
+                          Write the receipt
+                        </button>
+                      )}
                     </div>
                   </article>
                 );
